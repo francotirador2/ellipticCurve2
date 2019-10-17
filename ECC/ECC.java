@@ -8,35 +8,9 @@ import java.util.Arrays;
 
 import java.io.*;
 
-class Sano {
-
-    private BufferedInputStream bis;
-    public Sano(FileInputStream fis) {
-        bis = new BufferedInputStream(fis);
-    }
-    public int read() throws Exception {
-        return bis.read();
-    }
-    public void close() throws Exception { bis.close(); }
-    
-}
-
-class Meeno {
-
-    private BufferedOutputStream bos;
-    public Meeno(FileOutputStream fos)  throws Exception {
-        bos = new BufferedOutputStream(fos);
-    }
-
-    public void write(byte [] bytes)  throws Exception {
-        bos.write(bytes);
-    }
-    public void flush() throws Exception { bos.flush(); }
-    public void close() throws Exception { bos.close(); }
-}
 
 
-public class Echa {
+public class ECC {
 
     private static final int SUF_SIZE = 4096;
 
@@ -44,7 +18,7 @@ public class Echa {
     public static final Random r = new Random();
     private ECGroup group;
 
-    public Echa(ECGroup group) {
+    public ECC(ECGroup group) {
         this.group = group;
     }
 
@@ -98,18 +72,15 @@ public class Echa {
         return plainText;
     }
 
-    /**
-     * Generate a random key-pair, given the elliptic curve being used.
-     */
+     
     public KeyPair generateKeyPair() {
-        // Randomly select the private key, such that it is relatively prime to p
+        
         BigInteger p = group.getP();
         BigInteger privateKey;
         do {
             privateKey = new BigInteger(p.bitLength(), getRandom());
         } while (privateKey.gcd(p).compareTo(BigInteger.ONE) != 0);
 
-        // Calculate the public key, k * g.
         Point g = group.getGenerator();
         Point publicKey = group.multiply(g, privateKey);
 
@@ -137,8 +108,8 @@ public class Echa {
             //System.out.println("Shared secret during encryption: " + sharedSecret.toString());
             Point keyHint = group.multiply(g,k);
 
-            Sano epis = new Sano(new FileInputStream(srcFilePath));
-            Meeno epos = new Meeno(new FileOutputStream(destFilePath));
+            BufferedInputStream epis = new BufferedInputStream(new FileInputStream(srcFilePath));
+            BufferedOutputStream epos = new BufferedOutputStream(new FileOutputStream(destFilePath));
 
             byte [] suf = keyHint.toBinaryString(p.bitLength()).getBytes();
             epos.write(suf);
@@ -174,7 +145,7 @@ public class Echa {
          
         } catch (Exception e) {
 
-            System.out.println("Exception da bunda " + e);
+            System.out.println("Exception " + e);
 
         }
 
@@ -184,8 +155,8 @@ public class Echa {
 
          try {
 
-            Sano epis = new Sano(new FileInputStream(srcFilePath));
-            Meeno epos = new Meeno(new FileOutputStream(destFilePath));
+            BufferedInputStream epis = new BufferedInputStream(new FileInputStream(srcFilePath));
+            BufferedOutputStream epos = new BufferedOutputStream(new FileOutputStream(destFilePath));
 
             ECGroup group = key.getGroup();
             BigInteger privateKey = key.getKey();
@@ -231,7 +202,7 @@ public class Echa {
 
         } catch (Exception e)  {
 
-                System.out.println("Exception da bundas koodhi " + e);
+                System.out.println("Exception " + e);
         }
 
 
@@ -243,7 +214,7 @@ public class Echa {
 
         ECGroup group = new ECGroup(4, 20, 29, new Point(1, 5));
         //ECGroup group = new ECGroup(1, 1, 13, new Point(1, 4));
-        Echa ecc = new Echa(group);
+        ECC ecc = new ECC(group);
         String msg = "Hello     \nWorld";
         KeyPair keys = ecc.generateKeyPair();
 
